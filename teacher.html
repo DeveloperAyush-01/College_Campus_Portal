@@ -1,0 +1,569 @@
+{% extends 'base.html' %}
+{% block title %}
+    Teacher Dashboard · College Campus Portal
+{% endblock %}
+{% block content %}
+    <section class="hero-clean small">
+        <img src="{{ portal_media.banner }}" alt="College Campus Portal">
+    </section>
+    <div class="page">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">
+                    FACULTY WORKSPACE
+                </span>
+                <h1>
+                    Teacher Dashboard
+                </h1>
+                <p class="muted">
+                    Attendance, students, assignments, resources and events.
+                </p>
+                <small class="date-chip">
+                    📅
+                    {{today_day}}
+                    ,
+                    {{today_date}}
+                </small>
+            </div>
+            <a class="secondary" href="{{url_for('teacher_profile')}}">
+                ✏ Faculty Profile
+            </a>
+        </div>
+        <div class="quick-actions">
+            <a href="#attendance">
+                <b>
+                    📝 Attendance
+                </b>
+                <small>
+                    Mark present/absent
+                </small>
+            </a>
+            <a href="#assignments">
+                <b>
+                    📝 Assignments
+                </b>
+                <small>
+                    Publish & grade
+                </small>
+            </a>
+            <a href="#publish">
+                <b>
+                    📤 Notes / Notices
+                </b>
+                <small>
+                    Upload resources
+                </small>
+            </a>
+            <a href="#student-management">
+                <b>
+                    🎓 Student ID
+                </b>
+                <small>
+                    Edit student details
+                </small>
+            </a>
+        </div>
+        <section class="card" id="attendance">
+            <div class="section-head">
+                <h3>
+                    📝 Attendance Center
+                </h3>
+                <button class="secondary" onclick="generateQR()">
+                    📷 60-Min QR
+                </button>
+            </div>
+            <form method="post" action="{{url_for('take_attendance')}}" class="form-grid">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    Subject
+                    <select name="subject_id" id="attendanceSubject" required onchange="loadRoster()">
+                        {% for s in subjects %}
+                            <option value="{{s.id}}">
+                                {{s.branch}}
+                                · Y
+                                {{s.year_no}}
+                                ·
+                                {{s.semester}}
+                                ·
+                                {{s.subject_name}}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    Date
+                    <input type="date" name="attendance_date" id="attDate" value="{{today_iso}}">
+                </label>
+                <label>
+                    🔎 Search Name / Roll / Username
+                    <input id="attendanceSearch" oninput="loadRoster()" placeholder="e.g. GPJCSE... or student name">
+                </label>
+                <div class="attendance-toolbar">
+                    <button type="button" class="secondary" onclick="selectAllRoster(true)">
+                        ✓ Mark All Present
+                    </button>
+                    <button type="button" class="secondary" onclick="selectAllRoster(false)">
+                        × Mark All Absent
+                    </button>
+                    <span id="rosterCount" class="muted">
+                        Loading roster…
+                    </span>
+                </div>
+                <div id="roster" class="roster">
+                </div>
+                <button class="primary">
+                    💾 Save Attendance
+                </button>
+            </form>
+            <div id="qrBox" class="qr-box hidden">
+                <img id="qrImg">
+                <div>
+                    <b>
+                        QR valid for 60 minutes
+                    </b>
+                    <p id="qrTime">
+                    </p>
+                    <input id="scanUrl" readonly>
+                </div>
+            </div>
+        </section>
+        <section class="card" id="student-management">
+            <h3>
+                🎓 Student / User Edit + ID Card
+            </h3>
+            <p class="muted">
+                Teachers can edit student records and student ID-card details/photo. Search the student below; Management opens only student records for teacher accounts.
+            </p>
+            <form method="get" action="{{url_for('admin_manage')}}" class="search-bar">
+                <input name="q" placeholder="Search student by name, roll, enrollment, username or phone">
+                <input type="hidden" name="role" value="student">
+                <button class="primary">
+                    🔎 Open Student Search
+                </button>
+            </form>
+        </section>
+        <section class="card" id="publish">
+            <div class="section-head">
+                <h3>
+                    📤 Publish Notes / Notices / Activities
+                </h3>
+            </div>
+            <form method="post" action="{{url_for('teacher_post')}}" enctype="multipart/form-data" class="form-grid two">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    Type
+                    <select name="post_type">
+                        <option value="note">
+                            📚 Notes
+                        </option>
+                        <option value="notice">
+                            📢 Notice
+                        </option>
+                        <option value="timetable">
+                            🗓️ Timetable
+                        </option>
+                        <option value="circular">
+                            📄 Circular
+                        </option>
+                        <option value="activity">
+                            🎯 Activity
+                        </option>
+                        <option value="form">
+                            📝 Form
+                        </option>
+                    </select>
+                </label>
+                <label>
+                    Title
+                    <input name="title" required>
+                </label>
+                <label>
+                    Branch
+                    <select name="branch">
+                        <option value="">
+                            All branches
+                        </option>
+                        <option>
+                            CSE
+                        </option>
+                        <option>
+                            Electronics
+                        </option>
+                        <option>
+                            Pharmacy
+                        </option>
+                    </select>
+                </label>
+                <label>
+                    Year
+                    <input type="number" min="1" max="3" name="year_no">
+                </label>
+                <label>
+                    Semester
+                    <input name="semester">
+                </label>
+                <label>
+                    Subject
+                    <select name="subject_id">
+                        <option value="">
+                            No subject / general
+                        </option>
+                        {% for s in subjects %}
+                            <option value="{{s.id}}">
+                                {{s.subject_name}}
+                                · Y
+                                {{s.year_no}}
+                                ·
+                                {{s.semester}}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="full">
+                    Description
+                    <textarea name="body" rows="3">
+                    </textarea>
+                </label>
+                <label class="full">
+                    File
+                    <input type="file" name="file">
+                </label>
+                <button class="primary">
+                    🚀 Publish
+                </button>
+            </form>
+        </section>
+        <section class="card">
+            <h3>
+                ✏️🗑 Your Published Resources
+            </h3>
+            {% for p in posts %}
+                <details class="manage-item">
+                    <summary>
+                        <b>
+                            {{p.title}}
+                        </b>
+                        <small>
+                            {{p.post_type}}
+                            ·
+                            {{p.created_at}}
+                        </small>
+                    </summary>
+                    <form method="post" action="{{url_for('edit_post',pid=p.id)}}" class="form-grid" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <label>
+                            Title
+                            <input name="title" value="{{p.title}}" required>
+                        </label>
+                        <label>
+                            Description
+                            <textarea name="body">
+                                {{p.body or ''}}
+                            </textarea>
+                        </label>
+                        <label>
+                            Replace File
+                            <input type="file" name="file">
+                        </label>
+                        <button class="primary">
+                            ✏ Save Changes
+                        </button>
+                    </form>
+                    <form method="post" action="{{url_for('delete_post',pid=p.id)}}">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <button class="danger-btn">
+                            🗑 Delete
+                        </button>
+                    </form>
+                </details>
+            {% else %}
+                <div class="empty">
+                    No resources.
+                </div>
+            {% endfor %}
+        </section>
+        <section class="card" id="events">
+            <div class="section-head">
+                <h3>
+                    🗓️ Teacher Events · Edit + Delete
+                </h3>
+            </div>
+            <form method="post" action="{{url_for('teacher_event')}}" class="form-grid two">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    Title
+                    <input name="title" required>
+                </label>
+                <label>
+                    Date
+                    <input name="event_date" type="date" required>
+                </label>
+                <label>
+                    Start
+                    <input name="start_time" type="time">
+                </label>
+                <label>
+                    End
+                    <input name="end_time" type="time">
+                </label>
+                <label>
+                    Venue
+                    <input name="venue">
+                </label>
+                <label>
+                    Type
+                    <input name="event_type" value="General">
+                </label>
+                <label class="full">
+                    Description
+                    <textarea name="description">
+                    </textarea>
+                </label>
+                <button class="primary">
+                    Add Event
+                </button>
+            </form>
+            {% for e in events %}
+                <details class="manage-item">
+                    <summary>
+                        <b>
+                            {{e.title}}
+                        </b>
+                        ·
+                        {{e.event_date}}
+                    </summary>
+                    <form method="post" action="{{url_for('edit_event',eid=e.id)}}" class="form-grid two">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <label>
+                            Title
+                            <input name="title" value="{{e.title}}">
+                        </label>
+                        <label>
+                            Date
+                            <input name="event_date" type="date" value="{{e.event_date}}">
+                        </label>
+                        <label>
+                            Venue
+                            <input name="venue" value="{{e.venue or ''}}">
+                        </label>
+                        <label>
+                            Type
+                            <input name="event_type" value="{{e.event_type or 'General'}}">
+                        </label>
+                        <label class="full">
+                            Description
+                            <textarea name="description">
+                                {{e.description or ''}}
+                            </textarea>
+                        </label>
+                        <button class="primary">
+                            Save
+                        </button>
+                    </form>
+                    <form method="post" action="{{url_for('delete_event',eid=e.id)}}">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <button class="danger-btn">
+                            🗑 Delete Event
+                        </button>
+                    </form>
+                </details>
+            {% endfor %}
+        </section>
+        <section class="card" id="assignments">
+            <h3>
+                📝 Assignment Management
+            </h3>
+            <form method="post" action="{{url_for('create_assignment')}}" enctype="multipart/form-data" class="form-grid two">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    Subject
+                    <select name="subject_id" required>
+                        {% for s in subjects %}
+                            <option value="{{s.id}}">
+                                {{s.subject_name}}
+                                · Y
+                                {{s.year_no}}
+                                ·
+                                {{s.semester}}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    Title
+                    <input name="title" required>
+                </label>
+                <label>
+                    Due
+                    <input type="datetime-local" name="due_at">
+                </label>
+                <label>
+                    File
+                    <input type="file" name="file">
+                </label>
+                <label class="full">
+                    Instructions
+                    <textarea name="description">
+                    </textarea>
+                </label>
+                <button class="primary">
+                    Publish Assignment
+                </button>
+            </form>
+            {% for a in assignments %}
+                <div class="assignment-card">
+                    <b>
+                        {{a.title}}
+                    </b>
+                    ·
+                    {{a.subject_name}}
+                    ·
+                    {{a.submissions}}
+                    submissions
+                    <a class="secondary" href="{{url_for('assignment_submissions',aid=a.id)}}">
+                        Open & Grade →
+                    </a>
+                </div>
+            {% endfor %}
+        </section>
+        <section class="card" id="help-requests">
+            <div class="section-head">
+                <h3>
+                    🧑‍🎓 Student Help Requests
+                </h3>
+                <span class="muted">
+                    Tap Open to read and reply.
+                </span>
+            </div>
+            {% for h in help_requests %}
+                <div class="notification">
+                    <div class="notif-icon">
+                        🧑‍🎓
+                    </div>
+                    <div>
+                        <b>
+                            {{h.student_name}}
+                            {% if h.roll_no %}
+                                ·
+                                {{h.roll_no}}
+                            {% endif %}
+                        </b>
+                        <p>
+                            {{h.message}}
+                        </p>
+                        <small>
+                            {{h.created_at}}
+                            ·
+                            {{h.status}}
+                        </small>
+                    </div>
+                    <a class="secondary" href="{{url_for('teacher_help_detail',hid=h.id)}}">
+                        Open
+                    </a>
+                </div>
+            {% else %}
+                <div class="empty">
+                    No student help requests.
+                </div>
+            {% endfor %}
+        </section>
+        <section class="card" id="attendance-records">
+            <div class="section-head">
+                <h3>
+                    🗑 Attendance Records
+                </h3>
+                <span class="muted">
+                    Delete an incorrect attendance record permanently.
+                </span>
+            </div>
+            <div class="table-wrap">
+                <table class="compact-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                Date
+                            </th>
+                            <th>
+                                Student
+                            </th>
+                            <th>
+                                Roll
+                            </th>
+                            <th>
+                                Subject
+                            </th>
+                            <th>
+                                Status
+                            </th>
+                            <th>
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in attendance_records %}
+                            <tr>
+                                <td>
+                                    {{a.attendance_date}}
+                                </td>
+                                <td>
+                                    {{a.full_name}}
+                                </td>
+                                <td>
+                                    {{a.roll_no or '—'}}
+                                </td>
+                                <td>
+                                    {{a.subject_name}}
+                                </td>
+                                <td>
+                                    {{a.status}}
+                                </td>
+                                <td>
+                                    <form method="post" action="{{url_for('delete_attendance_record',aid=a.id)}}" onsubmit="return confirm('Permanently delete this attendance record?')">
+                                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                                        <button class="danger-btn mini-btn">
+                                            🗑 Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6">
+                                    No attendance records found.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section class="card">
+            <h3>
+                🚨 Below 75% Attendance
+            </h3>
+            {% for a in alerts %}
+                <div class="complaint-row">
+                    <div>
+                        <b>
+                            {{a.full_name}}
+                        </b>
+                        <small>
+                            {{a.roll_no}}
+                            ·
+                            {{a.pct}}
+                            %
+                        </small>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty">
+                    No low-attendance students.
+                </div>
+            {% endfor %}
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded',()=>{loadRoster();loadTeacherChart();});
+    </script>
+{% endblock %}

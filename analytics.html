@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}
+    Advanced Analytics
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">
+                    DATA INTELLIGENCE
+                </span>
+                <h2>
+                    📈 Advanced Admin Analytics
+                </h2>
+                <p class="muted">
+                    Attendance health, branch distribution, complaints and content activity.
+                </p>
+            </div>
+            <a class="secondary" href="{{url_for('admin_dashboard')}}">
+                ← Command Center
+            </a>
+        </div>
+        <section class="card">
+            <div class="charts-grid">
+                <div>
+                    <canvas id="branchChart">
+                    </canvas>
+                </div>
+                <div>
+                    <canvas id="statusChart">
+                    </canvas>
+                </div>
+                <div>
+                    <canvas id="attendanceChart">
+                    </canvas>
+                </div>
+            </div>
+        </section>
+        <section class="card">
+            <h3>
+                📢 Content Publishing Mix
+            </h3>
+            <div class="table-wrap">
+                <table>
+                    <tr>
+                        <th>
+                            Type
+                        </th>
+                        <th>
+                            Published
+                        </th>
+                    </tr>
+                    {% for p in analytics.posts %}
+                        <tr>
+                            <td>
+                                {{p.post_type}}
+                            </td>
+                            <td>
+                                {{p.count}}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </section>
+    </div>
+    <script>
+        window.ADMIN_ANALYTICS={{analytics|tojson}};document.addEventListener('DOMContentLoaded',()=>renderAdminCharts(window.ADMIN_ANALYTICS));
+    </script>
+{% endblock %}

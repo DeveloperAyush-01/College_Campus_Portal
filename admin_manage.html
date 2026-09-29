@@ -1,0 +1,568 @@
+{% extends 'base.html' %}
+{% block title %}
+    Management · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">
+                    {{'ADMIN CONTROL CENTER' if current_user.role=='admin' else 'TEACHER MANAGEMENT'}}
+                </span>
+                <h1>
+                    Management
+                </h1>
+                <p class="muted">
+                    Search, edit and manage students, users, content, events and college information.
+                </p>
+            </div>
+        </div>
+        <section class="card">
+            <form class="search-bar" method="get">
+                <input name="q" value="{{request.args.get('q','')}}" placeholder="🔎 Search Name, Roll No, Enrollment No, Username or Phone">
+                <select name="role">
+                    <option value="">
+                        All roles
+                    </option>
+                    <option value="student" {{'selected' if request.args.get('role')=='student'}}>
+                        Students
+                    </option>
+                    <option value="teacher" {{'selected' if request.args.get('role')=='teacher'}}>
+                        Teachers
+                    </option>
+                </select>
+                <button class="primary">
+                    Search
+                </button>
+                <a class="secondary" href="{{url_for('admin_manage')}}">
+                    Clear
+                </a>
+            </form>
+        </section>
+        <section class="card">
+            <div class="section-head">
+                <h3>
+                    👥 Students & Users
+                </h3>
+                <span class="muted">
+                    {{users|length}}
+                    result(s)
+                </span>
+            </div>
+            <form id="bulkResetForm" method="post" action="{{url_for('reset_devices_bulk')}}" class="bulk-reset" onsubmit="return confirm('Reset OTP device binding for all selected student/teacher accounts?')">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <button type="button" class="secondary" onclick="document.querySelectorAll('.user-select').forEach(x=>x.checked=true)">
+                    ☑ Select All
+                </button>
+                <button type="button" class="secondary" onclick="document.querySelectorAll('.user-select').forEach(x=>x.checked=false)">
+                    ☐ Clear All
+                </button>
+                <button class="primary">
+                    🔐 Reset OTP Device for Selected
+                </button>
+                <span class="muted">
+                    Select student/teacher rows below
+                </span>
+            </form>
+            <div class="table-wrap">
+                <table class="compact-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                Name
+                            </th>
+                            <th>
+                                Role
+                            </th>
+                            <th>
+                                Username
+                            </th>
+                            <th>
+                                Roll
+                            </th>
+                            <th>
+                                Enrollment
+                            </th>
+                            <th>
+                                Phone
+                            </th>
+                            <th>
+                                Branch
+                            </th>
+                            <th>
+                                Status
+                            </th>
+                            <th>
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                            <tr>
+                                <td>
+                                    {% if u.role in ['student','teacher'] %}
+                                        <input class="user-select" type="checkbox" name="user_ids" value="{{u.id}}" form="bulkResetForm">
+                                    {% endif %}
+                                    <b>
+                                        {{u.full_name}}
+                                    </b>
+                                    <br>
+                                    <small>
+                                        {{u.email or '—'}}
+                                    </small>
+                                </td>
+                                <td>
+                                    {{u.role}}
+                                </td>
+                                <td>
+                                    {{u.username}}
+                                </td>
+                                <td>
+                                    {{u.roll_no or '—'}}
+                                </td>
+                                <td>
+                                    {{u.enrollment_no or '—'}}
+                                </td>
+                                <td>
+                                    {{u.phone or '—'}}
+                                </td>
+                                <td>
+                                    {{u.branch or '—'}}
+                                </td>
+                                <td>
+                                    {{'Active' if u.active else 'Inactive'}}
+                                </td>
+                                <td>
+                                    <details>
+                                        <summary class="secondary mini-btn">
+                                            ✏ Edit
+                                        </summary>
+                                        <form method="post" action="{{url_for('edit_user',uid=u.id)}}" class="inline-edit" enctype="multipart/form-data">
+                                            <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                                            <input name="full_name" value="{{u.full_name}}" required>
+                                            <input name="roll_no" value="{{u.roll_no or ''}}" placeholder="Roll">
+                                            <input name="enrollment_no" value="{{u.enrollment_no or ''}}" placeholder="Enrollment">
+                                            <input name="email" value="{{u.email or ''}}" placeholder="Email">
+                                            <input name="phone" value="{{u.phone or ''}}" placeholder="Phone">
+                                            <input name="branch" value="{{u.branch or ''}}" placeholder="Branch">
+                                            <input name="year_no" value="{{u.year_no or ''}}" placeholder="Year">
+                                            <input name="semester" value="{{u.semester or ''}}" placeholder="Semester">
+                                            <input type="file" name="profile_image" accept="image/png,image/jpeg,image/webp" title="Student/teacher photo">
+                                            <button class="primary">
+                                                Save
+                                            </button>
+                                        </form>
+                                    </details>
+                                    {% if u.id!=current_user.id %}
+                                        <form method="post" action="{{url_for('toggle_user',uid=u.id)}}" style="display:inline">
+                                            <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                                            <button class="secondary mini-btn">
+                                                {{'Deactivate' if u.active else 'Activate'}}
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                    {% if current_user.role=='teacher' and u.role=='student' %}
+                                        <a class="secondary mini-btn" href="{{url_for('teacher_edit_student_id',uid=u.id)}}">
+                                            🪪 Edit ID
+                                        </a>
+                                    {% endif %}
+                                    {% if u.role in ['student','teacher'] %}
+                                        <form method="post" action="{{url_for('reset_device',uid=u.id)}}" style="display:inline">
+                                            <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                                            <button class="secondary mini-btn">
+                                                Reset OTP Device
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                    {% if current_user.role=='admin' and u.id!=current_user.id %}
+                                        <form method="post" action="{{url_for('delete_user_permanently',uid=u.id)}}" style="display:inline" onsubmit="return confirm('PERMANENTLY delete this account and its linked records? This cannot be undone.')">
+                                            <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                                            <button class="danger-btn mini-btn">
+                                                🗑 Permanent Delete
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="9">
+                                    No matching users.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% if current_user.role=='admin' %}
+            <section class="manage-grid">
+                <div class="card">
+                    <h3>
+                        ➕ Create Student / Teacher
+                    </h3>
+                    <form method="post" action="{{url_for('admin_create_user')}}" class="form-grid two">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <label>
+                            Role
+                            <select name="role">
+                                <option>
+                                    student
+                                </option>
+                                <option>
+                                    teacher
+                                </option>
+                            </select>
+                        </label>
+                        <label>
+                            Full Name
+                            <input name="full_name" required>
+                        </label>
+                        <label>
+                            Username
+                            <input name="username">
+                        </label>
+                        <label>
+                            Roll No
+                            <input name="roll_no">
+                        </label>
+                        <label>
+                            Enrollment No
+                            <input name="enrollment_no">
+                        </label>
+                        <label>
+                            Email
+                            <input name="email" type="email">
+                        </label>
+                        <label>
+                            Phone / WhatsApp
+                            <input name="phone">
+                        </label>
+                        <label>
+                            Branch
+                            <input name="branch">
+                        </label>
+                        <label>
+                            Year
+                            <input name="year_no" type="number">
+                        </label>
+                        <label>
+                            Semester
+                            <input name="semester">
+                        </label>
+                        <label>
+                            Password
+                            <input name="password" type="password" placeholder="Teacher only">
+                        </label>
+                        <button class="primary">
+                            Create
+                        </button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>
+                        🏫 About College · Admin Only
+                    </h3>
+                    <form method="post" action="{{url_for('admin_about')}}" class="form-grid">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <label>
+                            Title
+                            <input name="title" value="{{about.title if about else 'Government Polytechnic College, Jaunpur'}}">
+                        </label>
+                        <label>
+                            About / Description
+                            <textarea name="body" rows="8">
+                                {{about.body if about else ''}}
+                            </textarea>
+                        </label>
+                        <button class="primary">
+                            ✏ Save About College
+                        </button>
+                    </form>
+                </div>
+            </section>
+        {% endif %}
+        {% if current_user.role=='admin' %}
+            <section class="card" id="contact">
+                <div class="section-head">
+                    <div>
+                        <h3>
+                            📞 Admin Contact & Team Settings
+                        </h3>
+                        <p class="muted">
+                            These details appear in the footer and can be opened directly.
+                        </p>
+                    </div>
+                </div>
+                <form method="post" action="{{url_for('admin_contact')}}" class="form-grid two">
+                    <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                    <label>
+                        Instagram Profile URL
+                        <input name="instagram" value="{{portal_instagram}}" required>
+                    </label>
+                    <label>
+                        WhatsApp Number
+                        <input name="whatsapp" value="{{portal_phone}}" required>
+                    </label>
+                    <label>
+                        Team Name
+                        <input name="team_name" value="{{team_name}}" required>
+                    </label>
+                    <button class="primary">
+                        💾 Save Contact & Team
+                    </button>
+                    <button type="button" class="secondary" onclick="document.querySelector('#contact input[name=instagram]').value='';document.querySelector('#contact input[name=whatsapp]').value='';">
+                        Clear Form
+                    </button>
+                </form>
+                <form method="post" action="{{url_for('admin_contact_reset')}}" onsubmit="return confirm('Reset saved Instagram, WhatsApp and team settings to the built-in defaults?')">
+                    <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                    <button class="danger-btn">
+                        🗑 Reset Saved Contact
+                    </button>
+                </form>
+                <div class="contact-preview">
+                    <a class="secondary" target="_blank" href="{{portal_instagram}}">
+                        📸 Open Instagram
+                    </a>
+                    <a class="secondary" target="_blank" href="{{portal_whatsapp_url}}">
+                        💬 Open WhatsApp
+                    </a>
+                </div>
+            </section>
+            <section class="card">
+                <h3>
+                    ➕ Add Event
+                </h3>
+                <form method="post" action="{{url_for('admin_event')}}" class="form-grid two">
+                    <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                    <label>
+                        Title
+                        <input name="title" required>
+                    </label>
+                    <label>
+                        Date
+                        <input name="event_date" type="date" required>
+                    </label>
+                    <label>
+                        Start
+                        <input name="start_time" type="time">
+                    </label>
+                    <label>
+                        End
+                        <input name="end_time" type="time">
+                    </label>
+                    <label>
+                        Venue
+                        <input name="venue">
+                    </label>
+                    <label>
+                        Type
+                        <input name="event_type" value="General">
+                    </label>
+                    <label class="full">
+                        Description
+                        <textarea name="description">
+                        </textarea>
+                    </label>
+                    <button class="primary">
+                        Publish Event
+                    </button>
+                </form>
+            </section>
+        {% endif %}
+        <section class="card" id="media">
+            <div class="section-head">
+                <div>
+                    <h3>
+                        🖼️ Shared Portal Images
+                    </h3>
+                    <p class="muted">
+                        Only Admin can replace or reset the login image and the post-login top banner.
+                    </p>
+                </div>
+            </div>
+            <div class="media-admin-grid">
+                <div class="media-admin-card">
+                    <img src="{{portal_media.login}}" alt="Login preview">
+                    <b>
+                        Login Page Image
+                    </b>
+                    <form method="post" action="{{url_for('admin_media')}}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <input type="hidden" name="kind" value="login">
+                        <input type="file" name="image" accept="image/*" required>
+                        <button class="primary">
+                            ✏ Replace Login Image
+                        </button>
+                    </form>
+                    <form method="post" action="{{url_for('admin_media')}}">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <input type="hidden" name="kind" value="login">
+                        <input type="hidden" name="reset" value="1">
+                        <button class="danger-btn">
+                            🗑 Reset Image
+                        </button>
+                    </form>
+                </div>
+                <div class="media-admin-card">
+                    <img src="{{portal_media.banner}}" alt="Banner preview">
+                    <b>
+                        After-Login Banner
+                    </b>
+                    <form method="post" action="{{url_for('admin_media')}}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <input type="hidden" name="kind" value="banner">
+                        <input type="file" name="image" accept="image/*" required>
+                        <button class="primary">
+                            ✏ Replace Banner
+                        </button>
+                    </form>
+                    <form method="post" action="{{url_for('admin_media')}}">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <input type="hidden" name="kind" value="banner">
+                        <input type="hidden" name="reset" value="1">
+                        <button class="danger-btn">
+                            🗑 Reset Banner
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+        <section class="card" id="events">
+            <div class="section-head">
+                <h3>
+                    🗓️ Events · Edit + Delete
+                </h3>
+                <span class="muted">
+                    Admin can manage all events; teachers manage their own events.
+                </span>
+            </div>
+            {% for e in events %}
+                <details class="manage-item">
+                    <summary>
+                        <b>
+                            {{e.title}}
+                        </b>
+                        ·
+                        {{e.event_date}}
+                        ·
+                        {{e.event_type}}
+                    </summary>
+                    <form method="post" action="{{url_for('edit_event',eid=e.id)}}" class="form-grid two">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <label>
+                            Title
+                            <input name="title" value="{{e.title}}" required>
+                        </label>
+                        <label>
+                            Date
+                            <input type="date" name="event_date" value="{{e.event_date}}" required>
+                        </label>
+                        <label>
+                            Start
+                            <input type="time" name="start_time" value="{{e.start_time or ''}}">
+                        </label>
+                        <label>
+                            End
+                            <input type="time" name="end_time" value="{{e.end_time or ''}}">
+                        </label>
+                        <label>
+                            Venue
+                            <input name="venue" value="{{e.venue or ''}}">
+                        </label>
+                        <label>
+                            Type
+                            <input name="event_type" value="{{e.event_type or 'General'}}">
+                        </label>
+                        <label class="full">
+                            Description
+                            <textarea name="description">
+                                {{e.description or ''}}
+                            </textarea>
+                        </label>
+                        <button class="primary">
+                            Save Event
+                        </button>
+                    </form>
+                    <form method="post" action="{{url_for('delete_event',eid=e.id)}}">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <button class="danger-btn">
+                            🗑 Delete Event
+                        </button>
+                    </form>
+                </details>
+            {% else %}
+                <div class="empty">
+                    No events.
+                </div>
+            {% endfor %}
+        </section>
+        <section class="card">
+            <div class="section-head">
+                <h3>
+                    📚 Published Notes / Notices / Activities
+                </h3>
+                <span class="muted">
+                    Admin can edit/delete any; teachers can edit/delete their own.
+                </span>
+            </div>
+            {% for p in posts %}
+                <details class="manage-item">
+                    <summary>
+                        <b>
+                            {{p.title}}
+                        </b>
+                        ·
+                        {{p.post_type}}
+                        · by
+                        {{p.creator_name}}
+                    </summary>
+                    <form method="post" action="{{url_for('edit_post',pid=p.id)}}" class="form-grid two" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <label>
+                            Title
+                            <input name="title" value="{{p.title}}" required>
+                        </label>
+                        <label>
+                            Branch
+                            <input name="branch" value="{{p.branch or ''}}">
+                        </label>
+                        <label>
+                            Year
+                            <input name="year_no" value="{{p.year_no or ''}}">
+                        </label>
+                        <label>
+                            Semester
+                            <input name="semester" value="{{p.semester or ''}}">
+                        </label>
+                        <label class="full">
+                            Description
+                            <textarea name="body">
+                                {{p.body or ''}}
+                            </textarea>
+                        </label>
+                        <label class="full">
+                            Replace File
+                            <input type="file" name="file">
+                        </label>
+                        <button class="primary">
+                            ✏ Save Resource
+                        </button>
+                    </form>
+                    <form method="post" action="{{url_for('delete_post',pid=p.id)}}">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <button class="danger-btn">
+                            🗑 Delete
+                        </button>
+                    </form>
+                </details>
+            {% else %}
+                <div class="empty">
+                    No published resources.
+                </div>
+            {% endfor %}
+        </section>
+    </div>
+{% endblock %}

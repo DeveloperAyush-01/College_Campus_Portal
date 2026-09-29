@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}
+    Student Signup · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <section class="card simple-auth">
+            <img src="{{url_for('static',filename='assets/college-campus-logo.png')}}">
+            <div class="eyebrow">
+                NEW STUDENT REGISTRATION
+            </div>
+            <h1>
+                Create Your Portal Account
+            </h1>
+            <div class="notice-box">
+                <b>
+                    🔐 Official Roll / Enrollment No. Required
+                </b>
+                <br>
+                Your official Roll No. or Enrollment No. must already be reserved by Admin or an authorized Teacher. Students cannot create their own login ID.
+            </div>
+            <p class="muted">
+                First-time signup activates the reserved record. If both IDs were issued, Enrollment No. is used as the permanent login ID.
+            </p>
+            <form method="post" class="form-grid two">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    Full Name*
+                    <input name="full_name" required>
+                </label>
+                <label>
+                    Official Roll Number
+                    <input name="roll_no" placeholder="Issued by Admin/Teacher">
+                </label>
+                <label>
+                    Official Enrollment No.
+                    <input name="enrollment_no" placeholder="Issued by Admin/Teacher">
+                </label>
+                <label>
+                    Email
+                    <input type="email" name="email">
+                </label>
+                <label>
+                    Phone / WhatsApp
+                    <input name="phone" placeholder="10 digit mobile number">
+                </label>
+                <label>
+                    Branch*
+                    <select name="branch" required>
+                        <option value="">
+                            Select branch
+                        </option>
+                        <option>
+                            CSE
+                        </option>
+                        <option>
+                            Electronics
+                        </option>
+                        <option>
+                            Pharmacy
+                        </option>
+                    </select>
+                </label>
+                <label>
+                    Year*
+                    <select name="year_no" required>
+                        <option value="">
+                            Select year
+                        </option>
+                        <option>
+                            1
+                        </option>
+                        <option>
+                            2
+                        </option>
+                        <option>
+                            3
+                        </option>
+                    </select>
+                </label>
+                <label>
+                    Semester / Pattern*
+                    <input name="semester" required placeholder="1, 2, 3… or Annual">
+                </label>
+                <label>
+                    Password*
+                    <input type="password" name="password" minlength="10" required placeholder="Minimum 10 characters">
+                </label>
+                <button class="primary big" type="submit">
+                    Create Student Account
+                </button>
+            </form>
+            <p class="form-help">
+                Your name, branch, year and semester must match the official record. If Admin/Teacher registered an email or phone, you must use the same contact. Duplicate IDs and self-created IDs are blocked.
+            </p>
+            <div class="login-signup">
+                <a href="{{url_for('login')}}">
+                    ← Back to Login
+                </a>
+            </div>
+        </section>
+    </div>
+{% endblock %}

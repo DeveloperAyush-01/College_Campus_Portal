@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}
+    Forgot Password · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <section class="card simple-auth">
+            <img src="{{url_for('static',filename='assets/college-campus-logo.png')}}">
+            <div class="eyebrow">
+                OTP SECURITY
+            </div>
+            <h1>
+                Reset Password
+            </h1>
+            <p class="muted">
+                Enter your roll number, username, email or phone. A 6-digit OTP will be generated.
+            </p>
+            <form method="post" class="form-grid">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    Roll No / Username / Email / Phone
+                    <input name="identifier" required>
+                </label>
+                <button class="primary big">
+                    Send OTP
+                </button>
+            </form>
+            <div class="login-signup">
+                <a href="{{url_for('login')}}">
+                    ← Back to Login
+                </a>
+            </div>
+        </section>
+    </div>
+{% endblock %}

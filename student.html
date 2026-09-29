@@ -1,0 +1,495 @@
+{% extends 'base.html' %}
+{% block title %}
+    Student Dashboard · College Campus Portal
+{% endblock %}
+{% block content %}
+    <section class="hero-clean">
+        <img src="{{ portal_media.banner }}" alt="Government Polytechnic College Jaunpur College Campus Portal">
+    </section>
+    <div class="page">
+        <section class="student-id card">
+            <div class="avatar">
+                {% if student.profile_image %}
+                    <img class="student-avatar-img" src="{{student.profile_image}}" alt="Student photo">
+                {% else %}
+                    🎓
+                {% endif %}
+            </div>
+            <div>
+                <span class="eyebrow">
+                    STUDENT PROFILE
+                </span>
+                <h2>
+                    {{student.full_name}}
+                </h2>
+                <p class="muted">
+                    {{student.branch}}
+                    · Year
+                    {{student.year_no}}
+                    · Semester
+                    {{student.semester}}
+                    ·
+                    {{student.email or 'Email not added'}}
+                </p>
+            </div>
+            <div class="id-chip">
+                {{student.enrollment_no or student.roll_no}}
+                <small>
+                    OFFICIAL LOGIN ID
+                </small>
+            </div>
+        </section>
+        <section class="campus-links">
+            <a href="{{url_for('campus_page',section='college')}}">
+                <b>
+                    College
+                </b>
+                <small>
+                    About, courses & contact
+                </small>
+            </a>
+            <a href="{{url_for('campus_page',section='faculty')}}">
+                <b>
+                    Faculty
+                </b>
+                <small>
+                    Faculty directory
+                </small>
+            </a>
+            <a href="{{url_for('campus_page',section='infrastructure')}}">
+                <b>
+                    Infrastructure
+                </b>
+                <small>
+                    Campus & labs
+                </small>
+            </a>
+            <a href="{{url_for('events_page')}}">
+                <b>
+                    🗓️ Events & Holidays
+                </b>
+                <small>
+                    Upcoming college events
+                </small>
+            </a>
+            <a href="#assignments">
+                <b>
+                    📝 Assignments
+                </b>
+                <small>
+                    Submit & track work
+                </small>
+            </a>
+            <a href="#results">
+                <b>
+                    📊 Results & Marks
+                </b>
+                <small>
+                    Published grades
+                </small>
+            </a>
+            <a href="{{url_for('student_id_card')}}">
+                <b>
+                    🪪 Student ID Card
+                </b>
+                <small>
+                    Photo, print & QR verify
+                </small>
+            </a>
+            <a href="{{url_for('student_attendance_camera')}}">
+                <b>
+                    📷 Attendance Camera
+                </b>
+                <small>
+                    Scan teacher QR for your subject
+                </small>
+            </a>
+            <a href="#resources">
+                <b>
+                    📚 Notes & Notices
+                </b>
+                <small>
+                    View & download
+                </small>
+            </a>
+        </section>
+        <section id="attendance" class="card">
+            <div class="section-head">
+                <div>
+                    <h3>
+                        📊 Attendance Analytics
+                    </h3>
+                    <span class="muted">
+                        Overall:
+                        <b class="{{'good' if overall>=75 else 'bad'}}">
+                            {{overall}}
+                            %
+                        </b>
+                        · Target ≥ 75%
+                    </span>
+                </div>
+                <a class="primary" href="{{url_for('student_attendance_camera')}}">
+                    📷 Give Attendance
+                </a>
+                <span class="badge">
+                    Smart low-attendance alerts
+                </span>
+            </div>
+            <div class="charts-grid student-chart">
+                <div>
+                    <canvas id="studentTrend">
+                    </canvas>
+                </div>
+                <div class="attendance-grid">
+                    {% for a in attendance %}
+                        <div class="attendance-card">
+                            <b>
+                                {{a.subject_name}}
+                            </b>
+                            <div class="progress">
+                                <i style="width:{{a.pct}}%">
+                                </i>
+                            </div>
+                            <strong class="{{'good' if a.pct>=75 else 'bad'}}">
+                                {{a.pct}}
+                                %
+                            </strong>
+                            <small>
+                                {{a.present}}
+                                /
+                                {{a.total}}
+                                classes present
+                            </small>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        <section id="assignments" class="card">
+            <div class="section-head">
+                <h3>
+                    📝 Assignments & Submission
+                </h3>
+                <span class="muted">
+                    Upload PDF, image, document or write a note
+                </span>
+            </div>
+            <div class="data-grid">
+                {% for a in assignments %}
+                    <article class="assignment-card">
+                        <span class="badge">
+                            {{a.subject_name}}
+                        </span>
+                        <h4>
+                            {{a.title}}
+                        </h4>
+                        <p class="muted">
+                            {{a.description or 'No additional instructions.'}}
+                        </p>
+                        <div class="assignment-meta">
+                            <span>
+                                Due:
+                                {{a.due_at or 'No fixed deadline'}}
+                            </span>
+                            <span>
+                                Status:
+                                {{'Submitted' if a.submission_status in ['submitted','graded','late'] else 'Not submitted'}}
+                            </span>
+                            {% if a.marks is not none %}
+                                <span>
+                                    Marks:
+                                    {{a.marks}}
+                                    /
+                                    {{a.max_marks}}
+                                </span>
+                            {% endif %}
+                        </div>
+                        {% if a.file_path %}
+                            <p>
+                                <a class="file-link" target="_blank" href="{{a.file_path}}">
+                                    👀 Open assignment file
+                                </a>
+                            </p>
+                        {% endif %}
+                        <form method="post" action="{{url_for('submit_assignment',aid=a.id)}}" enctype="multipart/form-data" class="form-grid">
+                            <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                            <label>
+                                📎 Upload PDF / Image / Document
+                                <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.ppt,.pptx,.txt,.zip">
+                                <small class="muted">
+                                    PDF, JPG, PNG, WEBP, DOC, DOCX, PPT, PPTX, TXT or ZIP
+                                </small>
+                            </label>
+                            <label>
+                                Note / Answer
+                                <textarea name="note" rows="2" placeholder="Optional explanation">
+                                    {% if a.submission_id %}
+                                    {% endif %}
+                                </textarea>
+                            </label>
+                            <button class="primary" type="submit">
+                                {{'Update Submission' if a.submission_id else 'Submit Assignment'}}
+                            </button>
+                        </form>
+                        {% if a.feedback %}
+                            <div class="reply">
+                                <b>
+                                    Teacher feedback:
+                                </b>
+                                {{a.feedback}}
+                            </div>
+                        {% endif %}
+                    </article>
+                {% else %}
+                    <div class="empty">
+                        No assignments for your class yet.
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+        <section id="results" class="card">
+            <div class="section-head">
+                <h3>
+                    📊 Student Result / Marks
+                </h3>
+                <span class="muted">
+                    Only published results are visible here
+                </span>
+            </div>
+            {% if results %}
+                <div class="table-wrap">
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Subject
+                                </th>
+                                <th>
+                                    Exam
+                                </th>
+                                <th>
+                                    Marks
+                                </th>
+                                <th>
+                                    Percentage
+                                </th>
+                                <th>
+                                    Grade
+                                </th>
+                                <th>
+                                    Remarks
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in results %}
+                                <tr>
+                                    <td>
+                                        {{r.subject_name}}
+                                    </td>
+                                    <td>
+                                        {{r.exam_type}}
+                                    </td>
+                                    <td>
+                                        {{r.marks}}
+                                        /
+                                        {{r.max_marks}}
+                                    </td>
+                                    <td>
+                                        {{'%.1f'|format((r.marks/r.max_marks*100) if r.max_marks else 0)}}
+                                        %
+                                    </td>
+                                    <td class="grade">
+                                        {{r.grade}}
+                                    </td>
+                                    <td>
+                                        {{r.remarks or '—'}}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty">
+                    No published result yet.
+                </div>
+            {% endif %}
+        </section>
+        <section id="resources" class="card">
+            <div class="section-head">
+                <h3>
+                    📚 Notes, Notices & Resources
+                </h3>
+                <span class="muted">
+                    View and download files
+                </span>
+            </div>
+            <div class="resource-grid">
+                {% for p in posts %}
+                    <article class="resource">
+                        <span class="resource-icon">
+                            {% if p.post_type=='note' %}
+                                📚
+                            {% elif p.post_type=='notice' %}
+                                📢
+                            {% elif p.post_type=='timetable' %}
+                                🗓️
+                            {% elif p.post_type=='form' %}
+                                📝
+                            {% else %}
+                                📄
+                            {% endif %}
+                        </span>
+                        <div class="resource-content">
+                            <small>
+                                {{p.post_type|upper}}
+                                ·
+                                {{p.created_at}}
+                            </small>
+                            <h4>
+                                {{p.title}}
+                            </h4>
+                            <p>
+                                {{p.body or 'Open the attached resource.'}}
+                            </p>
+                            {% if p.file_path %}
+                                <div class="resource-actions">
+                                    <a class="secondary" target="_blank" href="{{p.file_path}}">
+                                        👀 View
+                                    </a>
+                                    <a class="download-btn" href="{{url_for('download_file',filename=p.file_path.split('/uploads/',1)[1])}}">
+                                        ⬇ Download
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% else %}
+                    <div class="empty">
+                        No resources published yet.
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+        <section id="help" class="grid-2">
+            <div class="card">
+                <h3>
+                    🧑‍🏫 Ask a Teacher
+                </h3>
+                <form method="post" action="{{url_for('help_request')}}" class="form-grid">
+                    <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                    <label>
+                        Teacher
+                        <select name="teacher_id" required>
+                            <option value="">
+                                Select teacher
+                            </option>
+                            {% for t in teachers %}
+                                <option value="{{t.id}}">
+                                    {{t.full_name}}
+                                    ·
+                                    {{t.branch}}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        Question
+                        <textarea name="message" rows="4" required>
+                        </textarea>
+                    </label>
+                    <button class="primary">
+                        Send Help Request
+                    </button>
+                </form>
+            </div>
+            <div id="complaints" class="card">
+                <h3>
+                    📨 Raise a Complaint
+                </h3>
+                <form method="post" action="{{url_for('complaint')}}" class="form-grid">
+                    <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                    <label>
+                        Category
+                        <select name="category">
+                            <option>
+                                Academic
+                            </option>
+                            <option>
+                                Infrastructure
+                            </option>
+                            <option>
+                                Library
+                            </option>
+                            <option>
+                                IT / Portal
+                            </option>
+                            <option>
+                                Safety
+                            </option>
+                            <option>
+                                Other
+                            </option>
+                        </select>
+                    </label>
+                    <label>
+                        Subject
+                        <input name="subject" required>
+                    </label>
+                    <label>
+                        Message
+                        <textarea name="message" rows="4" required>
+                        </textarea>
+                    </label>
+                    <button class="primary">
+                        Submit Complaint
+                    </button>
+                </form>
+            </div>
+        </section>
+        <section class="card">
+            <div class="section-head">
+                <h3>
+                    📨 My Complaint Timeline
+                </h3>
+                <span class="muted">
+                    Workflow updates
+                </span>
+            </div>
+            {% for c in complaints %}
+                <div class="timeline-item">
+                    <span class="badge status-{{c.status}}">
+                        {{c.status.replace('_',' ')}}
+                    </span>
+                    <div>
+                        <b>
+                            #
+                            {{c.id}}
+                            ·
+                            {{c.subject}}
+                        </b>
+                        <small>
+                            {{c.created_at}}
+                            →
+                            {{c.updated_at}}
+                        </small>
+                        {% if c.admin_reply %}
+                            <p>
+                                💬
+                                {{c.admin_reply}}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty">
+                    No complaints submitted.
+                </div>
+            {% endfor %}
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded',()=>loadStudentChart());
+    </script>
+{% endblock %}

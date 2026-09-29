@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}
+    Account Settings · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <section class="card account-card">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">
+                        ACCOUNT SETTINGS
+                    </span>
+                    <h1>
+                        My Account
+                    </h1>
+                    <p class="muted">
+                        Update your profile, contact details and password.
+                    </p>
+                </div>
+                <span class="badge">
+                    {{user.role|upper}}
+                </span>
+            </div>
+            <form method="post" enctype="multipart/form-data" class="form-grid two">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    Full Name
+                    <input name="full_name" value="{{user.full_name}}" required>
+                </label>
+                <label>
+                    Username
+                    <input value="{{user.username}}" disabled>
+                </label>
+                <label>
+                    Email
+                    <input type="email" name="email" value="{{user.email or ''}}">
+                </label>
+                <label>
+                    Phone / WhatsApp
+                    <input name="phone" value="{{user.phone or ''}}">
+                </label>
+                <label>
+                    Profile Image
+                    <input type="file" name="profile_image" accept="image/png,image/jpeg,image/webp">
+                </label>
+                <div>
+                </div>
+                <label>
+                    Current Password
+                    <input type="password" name="current_password" autocomplete="current-password">
+                </label>
+                <label>
+                    New Password
+                    <input type="password" name="new_password" minlength="8" autocomplete="new-password">
+                </label>
+                <button class="primary">
+                    💾 Save Account
+                </button>
+            </form>
+            <div class="account-links">
+                <a class="secondary" target="_blank" href="{{portal_instagram}}">
+                    📸 Admin Instagram
+                </a>
+                <a class="secondary" target="_blank" href="{{portal_whatsapp_url}}">
+                    💬 WhatsApp
+                </a>
+            </div>
+        </section>
+    </div>
+{% endblock %}

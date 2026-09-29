@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}
+    Set New Password · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <section class="card simple-auth">
+            <div class="eyebrow">
+                SECURE PASSWORD
+            </div>
+            <h1>
+                Set New Password
+            </h1>
+            <form method="post" class="form-grid">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    New Password
+                    <input type="password" name="password" minlength="10" required>
+                </label>
+                <button class="primary big">
+                    Update Password
+                </button>
+            </form>
+        </section>
+    </div>
+{% endblock %}

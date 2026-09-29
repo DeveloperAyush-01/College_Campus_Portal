@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{page.title}}
+    · College Campus Portal
+{% endblock %}
+{% block content %}
+    <section class="hero-clean small">
+        <img src="{{ portal_media.banner }}" alt="College Campus Portal">
+    </section>
+    <div class="page">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">
+                    CAMPUS INFORMATION
+                </span>
+                <h1>
+                    {{page.title}}
+                </h1>
+                <p class="muted">
+                    {{page.subtitle}}
+                </p>
+            </div>
+            <a class="secondary" href="{{url_for('dashboard')}}">
+                ← Dashboard
+            </a>
+        </div>
+        {% if section=='college' %}
+            <div class="campus-grid">
+                <section class="card">
+                    <h3>
+                        🏫
+                        {{about.title if about else 'Government Polytechnic College, Jaunpur'}}
+                    </h3>
+                    <p>
+                        {{about.body if about else 'Government Polytechnic College, Jaunpur is a government technical education institute at Jagdishpur, Jaunpur, Uttar Pradesh.'}}
+                    </p>
+                    <div class="facts">
+                        <b>
+                            Established
+                        </b>
+                        <span>
+                            1984
+                        </span>
+                        <b>
+                            Address
+                        </b>
+                        <span>
+                            Jagdishpur, Jaunpur, Uttar Pradesh
+                        </span>
+                        <b>
+                            Programmes
+                        </b>
+                        <span>
+                            CSE · Electronics Engineering · Diploma in Pharmacy
+                        </span>
+                    </div>
+                    {% if current_user.role=='admin' %}
+                        <a class="primary" href="{{url_for('admin_manage')}}">
+                            ✏ Edit About College
+                        </a>
+                    {% endif %}
+                </section>
+                <section class="card">
+                    <h3>
+                        🎓 Programmes
+                    </h3>
+                    <div class="programme">
+                        <b>
+                            Computer Science & Engineering
+                        </b>
+                        <span>
+                            3-Year Diploma
+                        </span>
+                    </div>
+                    <div class="programme">
+                        <b>
+                            Electronics Engineering
+                        </b>
+                        <span>
+                            3-Year Diploma
+                        </span>
+                    </div>
+                    <div class="programme">
+                        <b>
+                            Diploma in Pharmacy
+                        </b>
+                        <span>
+                            Pharmacy programme
+                        </span>
+                    </div>
+                </section>
+            </div>
+        {% elif section=='faculty' %}
+            <section class="card">
+                <h3>
+                    🧑‍🏫 Faculty & Staff Directory
+                </h3>
+                <div class="faculty-grid">
+                    {% for t in teachers %}
+                        <article class="faculty-card">
+                            <div class="faculty-avatar">
+                                {{t.full_name[:1]}}
+                            </div>
+                            <div>
+                                <h4>
+                                    {{t.full_name}}
+                                </h4>
+                                <b>
+                                    {{t.designation}}
+                                </b>
+                                <p>
+                                    {{t.qualification}}
+                                </p>
+                                <small>
+                                    {{t.email or 'Email not listed'}}
+                                </small>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% elif section=='infrastructure' %}
+            <section class="card">
+                <div class="section-head">
+                    <div>
+                        <h3>
+                            🏢 Infrastructure Gallery
+                        </h3>
+                        <p class="muted">
+                            Admin + teachers can upload/remove managed images. Click an image to zoom.
+                        </p>
+                    </div>
+                </div>
+                <div class="gallery-grid">
+                    {% for img in infra %}
+                        <figure class="zoomable">
+                            <img src="{{img.file_path}}" alt="{{img.title}}" onclick="openImageViewer(this.src,this.alt)">
+                            <figcaption>
+                                <b>
+                                    {{img.title}}
+                                </b>
+                                <small>
+                                    Uploaded by
+                                    {{img.uploader}}
+                                </small>
+                                {% if current_user.role=='admin' or img.uploaded_by==current_user.id %}
+                                    <form method="post" action="{{url_for('infrastructure_delete',iid=img.id)}}">
+                                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                                        <button class="danger-btn mini-btn">
+                                            🗑 Remove
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </figcaption>
+                        </figure>
+                    {% endfor %}
+                    {% for img in gallery %}
+                        <figure class="zoomable">
+                            <img src="{{url_for('static',filename='assets/gallery/'+img.file)}}" alt="{{img.title}}" onclick="openImageViewer(this.src,this.alt)">
+                            <figcaption>
+                                {{img.title}}
+                                <small>
+                                    Project gallery
+                                </small>
+                            </figcaption>
+                        </figure>
+                    {% endfor %}
+                </div>
+                {% if current_user.role in ['admin','teacher'] %}
+                    <form method="post" action="{{url_for('infrastructure_upload')}}" enctype="multipart/form-data" class="form-grid two upload-box">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <label>
+                            Image Title
+                            <input name="title" placeholder="Computer Lab / Workshop">
+                        </label>
+                        <label>
+                            Image
+                            <input type="file" name="image" accept="image/png,image/jpeg,image/webp" required>
+                        </label>
+                        <button class="primary">
+                            📤 Upload Infrastructure Image
+                        </button>
+                    </form>
+                {% endif %}
+            </section>
+        {% elif section=='tourism' %}
+            <section class="card">
+                <div class="tourism-grid">
+                    {% for t in tourism %}
+                        <article class="tourism-card">
+                            <img src="{{t.image_path}}" alt="{{t.name}}" onclick="openImageViewer(this.src,this.alt)">
+                            <div>
+                                <span class="badge">
+                                    JAUNPUR
+                                </span>
+                                <h3>
+                                    {{t.name}}
+                                </h3>
+                                <p>
+                                    {{t.description}}
+                                </p>
+                                <p class="tourism-address">
+                                    <b>
+                                        📍 Location:
+                                    </b>
+                                    {{t.address or "Jaunpur, Uttar Pradesh, India"}}
+                                </p>
+                                <a class="secondary" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query={{ (t.address or (t.name ~ ", Jaunpur, Uttar Pradesh"))|urlencode }}">
+                                    🗺 Open Map
+                                </a>
+                                {% if t.source_url %}
+                                    <a class="file-link" href="{{t.source_url}}" target="_blank" rel="noopener">
+                                        Open-source image / reference →
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% elif section=='facilities' %}
+            <div class="campus-grid">
+                <section class="card">
+                    <h3>
+                        ✨ Student Facilities
+                    </h3>
+                    <div class="facility-list">
+                        <div>
+                            📚
+                            <b>
+                                Library
+                            </b>
+                            <small>
+                                Study and reference support
+                            </small>
+                        </div>
+                        <div>
+                            💻
+                            <b>
+                                Computer Facilities
+                            </b>
+                            <small>
+                                Practical computer learning
+                            </small>
+                        </div>
+                        <div>
+                            🔬
+                            <b>
+                                Laboratories
+                            </b>
+                            <small>
+                                Branch-specific practical learning
+                            </small>
+                        </div>
+                        <div>
+                            🔧
+                            <b>
+                                Workshop
+                            </b>
+                            <small>
+                                Hands-on technical practice
+                            </small>
+                        </div>
+                        <div>
+                            🧑‍🏫
+                            <b>
+                                Faculty Support
+                            </b>
+                            <small>
+                                Academic guidance
+                            </small>
+                        </div>
+                        <div>
+                            🛡️
+                            <b>
+                                Student Support
+                            </b>
+                            <small>
+                                Complaints and campus assistance
+                            </small>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        {% else %}
+            <section class="card">
+                <h3>
+                    🎓 Academic Structure
+                </h3>
+                {% for branch_name, structure in subjects.items() %}
+                    <div class="branch-block">
+                        <h4>
+                            {{'Computer Science & Engineering' if branch_name=='CSE' else 'Electronics Engineering' if branch_name=='Electronics' else 'Diploma in Pharmacy'}}
+                        </h4>
+                        {% for year, semesters in structure.items() %}
+                            <div class="year-title">
+                                Year
+                                {{year}}
+                            </div>
+                            {% for sem, subject_list in semesters.items() %}
+                                <div class="semester-box">
+                                    <b>
+                                        {{'Semester '+sem if sem!='Annual' else 'Annual / Year '+(year|string)}}
+                                    </b>
+                                    <div class="subject-pills">
+                                        {% for x in subject_list %}
+                                            <span>
+                                                {{x}}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </section>
+        {% endif %}
+    </div>
+    <div id="imageViewer" class="image-viewer" onclick="closeImageViewer(event)">
+        <div class="viewer-toolbar">
+            <button type="button" onclick="zoomImage(1.15,event)">
+                ＋
+            </button>
+            <button type="button" onclick="zoomImage(.87,event)">
+                −
+            </button>
+            <button type="button" onclick="resetImageZoom(event)">
+                100%
+            </button>
+            <button type="button" onclick="closeImageViewer(event)">
+                ×
+            </button>
+        </div>
+        <img id="viewerImage" alt="">
+    </div>
+{% endblock %}

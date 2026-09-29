@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}
+    Complaint Workflow
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">
+                    SERVICE DESK
+                </span>
+                <h2>
+                    📨 Complaint Tracking Workflow
+                </h2>
+                <p class="muted">
+                    Open → In Progress → Resolved / Rejected
+                </p>
+            </div>
+            <a class="secondary" href="{{url_for('admin_dashboard')}}">
+                ← Dashboard
+            </a>
+        </div>
+        {% for c in rows %}
+            <div class="card complaint">
+                <div class="complaint-main">
+                    <span class="badge status-{{c.status}}">
+                        {{c.status.replace('_',' ')}}
+                    </span>
+                    <h3>
+                        #
+                        {{c.id}}
+                        ·
+                        {{c.subject}}
+                    </h3>
+                    <p>
+                        <b>
+                            {{c.student_name}}
+                        </b>
+                        ·
+                        {{c.roll_no}}
+                        ·
+                        {{c.category}}
+                    </p>
+                    <p>
+                        {{c.message}}
+                    </p>
+                    {% if c.admin_reply %}
+                        <div class="reply">
+                            💬
+                            <b>
+                                Admin:
+                            </b>
+                            {{c.admin_reply}}
+                        </div>
+                    {% endif %}
+                    <small class="muted">
+                        Updated
+                        {{c.updated_at}}
+                    </small>
+                </div>
+                <form method="post" action="{{url_for('update_complaint',cid=c.id)}}" class="workflow-form">
+                    <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                    <label>
+                        Status
+                        <select name="status">
+                            <option value="open" {% if c.status=='open' %}selected{% endif %}>
+                                Open
+                            </option>
+                            <option value="in_progress" {% if c.status=='in_progress' %}selected{% endif %}>
+                                In Progress
+                            </option>
+                            <option value="resolved" {% if c.status=='resolved' %}selected{% endif %}>
+                                Resolved
+                            </option>
+                            <option value="rejected" {% if c.status=='rejected' %}selected{% endif %}>
+                                Rejected
+                            </option>
+                        </select>
+                    </label>
+                    <label>
+                        Reply
+                        <textarea name="reply" rows="4" placeholder="Add admin response">
+                            {{c.admin_reply or ''}}
+                        </textarea>
+                    </label>
+                    <button class="primary">
+                        Update Workflow
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="empty">
+                No complaints yet.
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
