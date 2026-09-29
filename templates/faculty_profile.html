@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}
+    Faculty Profile · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <section class="card profile-form">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">
+                        FACULTY PROFILE
+                    </span>
+                    <h1>
+                        My Faculty Profile
+                    </h1>
+                    <p class="muted">
+                        Keep designation, qualification, contact and profile photo updated.
+                    </p>
+                </div>
+            </div>
+            <div class="profile-preview">
+                {% if teacher.profile_image %}
+                    <img src="{{teacher.profile_image}}" alt="Faculty profile">
+                {% else %}
+                    <div class="profile-placeholder">
+                        🧑‍🏫
+                    </div>
+                {% endif %}
+                <div>
+                    <b>
+                        {{teacher.full_name}}
+                    </b>
+                    <small class="muted">
+                        {{teacher.branch}}
+                        ·
+                        {{teacher.designation or 'Faculty'}}
+                    </small>
+                </div>
+            </div>
+            <form method="post" enctype="multipart/form-data" class="form-grid two" style="margin-top:18px">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    Full Name
+                    <input name="full_name" value="{{teacher.full_name}}" required>
+                </label>
+                <label>
+                    Email
+                    <input type="email" name="email" value="{{teacher.email or ''}}">
+                </label>
+                <label>
+                    Phone / WhatsApp
+                    <input name="phone" value="{{teacher.phone or ''}}">
+                </label>
+                <label>
+                    Designation
+                    <input name="designation" value="{{teacher.designation or ''}}">
+                </label>
+                <label>
+                    Qualification
+                    <input name="qualification" value="{{teacher.qualification or ''}}">
+                </label>
+                <label>
+                    Profile Image
+                    <input type="file" name="profile_image" accept=".png,.jpg,.jpeg,.webp">
+                </label>
+                <label class="full">
+                    Bio
+                    <textarea name="bio" rows="5">
+                        {{teacher.bio or ''}}
+                    </textarea>
+                </label>
+                <button class="primary" type="submit">
+                    Save Faculty Profile
+                </button>
+            </form>
+        </section>
+    </div>
+{% endblock %}

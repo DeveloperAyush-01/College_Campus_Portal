@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}
+    Help Request · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <section class="card">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">
+                        STUDENT HELP
+                    </span>
+                    <h2>
+                        Help Request #
+                        {{help_request.id}}
+                    </h2>
+                </div>
+                <span class="badge">
+                    {{help_request.status}}
+                </span>
+            </div>
+            <div class="help-detail">
+                <p>
+                    <b>
+                        Student:
+                    </b>
+                    {{help_request.student_name}}
+                    {% if help_request.roll_no %}
+                        ·
+                        {{help_request.roll_no}}
+                    {% endif %}
+                </p>
+                <p>
+                    <b>
+                        Subject:
+                    </b>
+                    {{help_request.subject_name or 'General'}}
+                </p>
+                <p>
+                    <b>
+                        Question:
+                    </b>
+                </p>
+                <div class="muted-box">
+                    {{help_request.message}}
+                </div>
+            </div>
+            <form method="post" class="form-grid" style="margin-top:18px">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    Your Reply
+                    <textarea name="reply" rows="6" required>
+                        {{help_request.reply or ''}}
+                    </textarea>
+                </label>
+                <label>
+                    Status
+                    <select name="status">
+                        <option value="answered" {{'selected' if help_request.status=='answered'}}>
+                            Answered
+                        </option>
+                        <option value="open" {{'selected' if help_request.status=='open'}}>
+                            Open
+                        </option>
+                        <option value="closed" {{'selected' if help_request.status=='closed'}}>
+                            Closed
+                        </option>
+                    </select>
+                </label>
+                <button class="primary">
+                    📨 Send Reply
+                </button>
+            </form>
+        </section>
+    </div>
+{% endblock %}

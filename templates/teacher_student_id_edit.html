@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}
+    Edit Student ID Card · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <section class="card">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">
+                        TEACHER ONLY
+                    </span>
+                    <h1>
+                        🪪 Edit Student ID Card
+                    </h1>
+                    <p class="muted">
+                        Teachers can update the student's ID details and photo.
+                    </p>
+                </div>
+                <a class="secondary" href="{{url_for('teacher_dashboard')}}#student-management">
+                    ← Back
+                </a>
+            </div>
+            <form method="post" enctype="multipart/form-data" class="form-grid two">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    Full Name
+                    <input name="full_name" value="{{student.full_name}}" required>
+                </label>
+                <label>
+                    Roll No
+                    <input name="roll_no" value="{{student.roll_no or ''}}">
+                </label>
+                <label>
+                    Enrollment No
+                    <input name="enrollment_no" value="{{student.enrollment_no or ''}}">
+                </label>
+                <label>
+                    Branch
+                    <input name="branch" value="{{student.branch or ''}}">
+                </label>
+                <label>
+                    Year
+                    <input type="number" name="year_no" value="{{student.year_no or ''}}">
+                </label>
+                <label>
+                    Semester
+                    <input name="semester" value="{{student.semester or ''}}">
+                </label>
+                <label>
+                    Email
+                    <input type="email" name="email" value="{{student.email or ''}}">
+                </label>
+                <label>
+                    Phone
+                    <input name="phone" value="{{student.phone or ''}}">
+                </label>
+                <label class="full">
+                    Student Photo
+                    <input type="file" name="profile_image" accept="image/png,image/jpeg,image/webp">
+                </label>
+                {% if student.profile_image %}
+                    <div class="profile-preview">
+                        <img src="{{student.profile_image}}" alt="Current student photo">
+                        <span>
+                            Current photo
+                        </span>
+                    </div>
+                {% endif %}
+                <button class="primary">
+                    💾 Save Student ID
+                </button>
+            </form>
+        </section>
+    </div>
+{% endblock %}

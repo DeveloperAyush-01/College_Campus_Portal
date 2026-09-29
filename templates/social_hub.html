@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}
+Social & Contact Hub · College Campus Portal
+{% endblock %}
+{% block content %}
+<div class="page">
+    <section class="card social-hero">
+        <span class="eyebrow">
+            DIGITAL DYNAMOS
+        </span>
+        <h1>
+            Social & Contact Hub
+        </h1>
+        <p class="muted">
+            Tap any account to open it. Admin can change the saved Instagram and WhatsApp contact from Management →
+            Contact & Team Settings.
+        </p>
+    </section>
+    <section class="social-grid">
+        <a class="social-card instagram" href="{{portal_instagram}}" target="_blank" rel="noopener">
+            <span class="social-icon">
+                ◎
+            </span>
+            <div>
+                <b>
+                    Instagram
+                </b>
+                <small>
+                    {{portal_instagram}}
+                </small>
+            </div>
+            <strong>
+                ↗
+            </strong>
+        </a>
+        <a class="social-card whatsapp" href="{{portal_whatsapp_url}}" target="_blank" rel="noopener">
+            <span class="social-icon">
+                ◉
+            </span>
+            <div>
+                <b>
+                    WhatsApp
+                </b>
+                <small>
+                    {{portal_phone}}
+                </small>
+            </div>
+            <strong>
+                ↗
+            </strong>
+        </a>
+        <a class="social-card web" href="https://www.google.com/" target="_blank" rel="noopener">
+            <span class="social-icon">
+                G
+            </span>
+            <div>
+                <b>
+                    Google
+                </b>
+                <small>
+                    Search the web
+                </small>
+            </div>
+            <strong>
+                ↗
+            </strong>
+        </a>
+        <a class="social-card web" href="https://youtube.com/@darkweb-explore?si=1C-1lPQKy_8HLrWH" target="_blank"
+            rel="noopener">
+            <span class="social-icon">
+                ▶
+            </span>
+            <div>
+                <b>
+                    YouTube
+                </b>
+                <small>
+                    Videos & lectures
+                </small>
+            </div>
+            <strong>
+                ↗
+            </strong>
+        </a>
+        <a class="social-card web" href="https://www.linkedin.com/" target="_blank" rel="noopener">
+            <span class="social-icon">
+                in
+            </span>
+            <div>
+                <b>
+                    LinkedIn
+                </b>
+                <small>
+                    Professional network
+                </small>
+            </div>
+            <strong>
+                ↗
+            </strong>
+        </a>
+        <a class="social-card web" href="https://www.facebook.com/" target="_blank" rel="noopener">
+            <span class="social-icon">
+                f
+            </span>
+            <div>
+                <b>
+                    Facebook
+                </b>
+                <small>
+                    Social updates
+                </small>
+            </div>
+            <strong>
+                ↗
+            </strong>
+        </a>
+        <a class="social-card web" href="https://x.com/" target="_blank" rel="noopener">
+            <span class="social-icon">
+                𝕏
+            </span>
+            <div>
+                <b>
+                    X
+                </b>
+                <small>
+                    Social updates
+                </small>
+            </div>
+            <strong>
+                ↗
+            </strong>
+        </a>
+    </section>
+    {% if current_user and current_user.role=='admin' %}
+    <section class="card">
+        <h3>
+            ⚙ Admin Account Settings
+        </h3>
+        <p class="muted">
+            Change your own name, email, phone, profile image or password from Account. Change portal Instagram,
+            WhatsApp and team branding from Management.
+        </p>
+        <div class="resource-actions">
+            <a class="primary" href="{{url_for('account_settings')}}">
+                Open Account Settings
+            </a>
+            <a class="secondary" href="{{url_for('admin_manage')}}#contact">
+                Open Contact & Team Settings
+            </a>
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

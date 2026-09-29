@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}
+    Student ID Card · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <div class="section-head print-hide">
+            <div>
+                <span class="eyebrow">
+                    DIGITAL IDENTITY
+                </span>
+                <h1>
+                    Student ID Card
+                </h1>
+                <p class="muted">
+                    Download your ID as PNG or PDF, or print it.
+                </p>
+            </div>
+            <div class="actions">
+                <a class="primary" href="{{url_for('download_id_png')}}">
+                    ⬇ PNG
+                </a>
+                <a class="secondary" href="{{url_for('download_id_pdf')}}">
+                    ⬇ PDF
+                </a>
+                <button class="secondary" onclick="window.print()">
+                    🖨 Print
+                </button>
+            </div>
+        </div>
+        <section class="card print-hide id-photo-upload">
+            <h3>
+                📷 Add / Change Your ID Photo
+            </h3>
+            <p class="muted">
+                Student can upload their own photo. Teacher can edit student ID details/photo from Teacher Management.
+            </p>
+            <form method="post" enctype="multipart/form-data" class="form-grid two">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <input type="file" name="profile_image" accept="image/png,image/jpeg,image/webp" required>
+                <button class="primary">
+                    Upload Photo
+                </button>
+            </form>
+        </section>
+        <div class="id-card-wrap">
+            <article class="id-card" id="studentIdCard">
+                <header class="id-card-head">
+                    <img src="{{url_for('static',filename='assets/college-campus-logo.png')}}">
+                    <div>
+                        <h2>
+                            GOVERNMENT POLYTECHNIC COLLEGE, JAUNPUR
+                        </h2>
+                        <small>
+                            COLLEGE CAMPUS PORTAL · STUDENT ID
+                        </small>
+                    </div>
+                </header>
+                <div class="id-card-body">
+                    <div>
+                        {% if student.profile_image %}
+                            <img class="id-photo" src="{{student.profile_image}}" alt="Student photo">
+                        {% else %}
+                            <div class="id-photo" style="display:grid;place-items:center;background:#edf4ff;font-size:45px">
+                                🎓
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="id-details">
+                        <p>
+                            <b>
+                                Name:
+                            </b>
+                            {{student.full_name}}
+                        </p>
+                        <p>
+                            <b>
+                                Roll No:
+                            </b>
+                            {{student.roll_no or '—'}}
+                        </p>
+                        <p>
+                            <b>
+                                Enrollment No:
+                            </b>
+                            {{student.enrollment_no or '—'}}
+                        </p>
+                        <p>
+                            <b>
+                                Branch:
+                            </b>
+                            {{student.branch}}
+                        </p>
+                        <p>
+                            <b>
+                                Year:
+                            </b>
+                            {{student.year_no}}
+                            &nbsp;
+                            <b>
+                                Semester:
+                            </b>
+                            {{student.semester}}
+                        </p>
+                        <p>
+                            <b>
+                                Email:
+                            </b>
+                            {{student.email or '—'}}
+                        </p>
+                        <p>
+                            <b>
+                                Phone:
+                            </b>
+                            {{student.phone or '—'}}
+                        </p>
+                    </div>
+                    <div>
+                        <img class="id-qr" src="{{qr_url}}" alt="Verification QR">
+                    </div>
+                </div>
+                <footer class="id-card-foot">
+                    <span>
+                        Login ID:
+                        {{student.enrollment_no or student.roll_no}}
+                    </span>
+                    <span>
+                        Scan QR to verify
+                    </span>
+                </footer>
+            </article>
+        </div>
+    </div>
+{% endblock %}

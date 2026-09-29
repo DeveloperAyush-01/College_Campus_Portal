@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}
+    Notifications
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">
+                    SMART NOTIFICATION HUB
+                </span>
+                <h2>
+                    🔔 Notifications
+                </h2>
+            </div>
+            <form method="post" action="{{url_for('notification_read_all')}}">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <button class="secondary">
+                    Mark all read
+                </button>
+            </form>
+        </div>
+        {% for n in notifications %}
+            <div class="notification {{'unread' if not n.is_read else ''}}">
+                <div class="notif-icon">
+                    {% if n.kind=='attendance' %}
+                        📊
+                    {% elif n.kind=='complaint' %}
+                        📨
+                    {% elif n.kind=='content' %}
+                        📚
+                    {% elif n.kind=='help' %}
+                        🧑‍🏫
+                    {% else %}
+                        🔔
+                    {% endif %}
+                </div>
+                <div>
+                    <b>
+                        {{n.title}}
+                    </b>
+                    <p>
+                        {{n.message}}
+                    </p>
+                    <small>
+                        {{n.created_at}}
+                    </small>
+                </div>
+                {% if not n.is_read %}
+                    <form method="post" action="{{url_for('notification_read',nid=n.id)}}">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <button class="secondary">
+                            Open
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="empty">
+                You are all caught up. 🎉
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

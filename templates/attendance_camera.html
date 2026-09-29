@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}
+    Attendance Camera · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <section class="card camera-card">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">
+                        STUDENT ATTENDANCE
+                    </span>
+                    <h1>
+                        📷 Attendance Camera
+                    </h1>
+                    <p class="muted">
+                        Allow camera access and scan the QR displayed by your teacher. Scan the QR for each subject separately.
+                    </p>
+                </div>
+                <a class="secondary" href="{{url_for('student_dashboard')}}#attendance">
+                    ← Back
+                </a>
+            </div>
+            <div id="reader" class="qr-reader">
+            </div>
+            <div id="scanStatus" class="camera-status">
+                Starting camera…
+            </div>
+            <button class="secondary" type="button" onclick="startScanner()">
+                🔄 Start Camera
+            </button>
+        </section>
+    </div>
+    <script src="https://unpkg.com/html5-qrcode" defer>
+    </script>
+    <script>
+        let scanner=null;function startScanner(){if(typeof Html5Qrcode==='undefined'){document.getElementById('scanStatus').textContent='Camera library is loading. Tap Start Camera again.';return;}if(scanner){try{scanner.stop();}catch(e){}}scanner=new Html5Qrcode('reader');scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:240,height:240}},(decoded)=>{document.getElementById('scanStatus').textContent='QR detected. Opening attendance…';window.location.href=decoded;},()=>{}).catch(err=>{document.getElementById('scanStatus').textContent='Camera could not start. Allow camera permission and use HTTPS or localhost.';console.error(err);});}window.addEventListener('load',()=>setTimeout(startScanner,800));
+    </script>
+{% endblock %}

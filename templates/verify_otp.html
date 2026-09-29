@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}
+    Verify OTP · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <section class="card simple-auth otp-box">
+            <div class="eyebrow">
+                ONE-TIME PASSWORD
+            </div>
+            <h1>
+                Verify OTP
+            </h1>
+            <p class="muted">
+                {{ "Enter the 6-digit OTP sent to your registered email/WhatsApp to complete login." if login_otp else "Enter the 6-digit OTP sent to your configured email/WhatsApp." }}
+            </p>
+            {% if demo_otp %}
+                <div class="warning data-card">
+                    <b>
+                        Demo mode OTP
+                    </b>
+                    <div class="demo-otp">
+                        {{demo_otp}}
+                    </div>
+                    <small>
+                        Configure SMTP or Twilio before production so OTPs are delivered privately.
+                    </small>
+                </div>
+            {% endif %}
+            <form method="post" class="form-grid">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                <label>
+                    6-digit OTP
+                    <input name="otp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required>
+                </label>
+                <button class="primary big">
+                    Verify & Continue
+                </button>
+            </form>
+            <p class="form-help">
+                OTP expires in 10 minutes and allows up to 5 attempts.
+            </p>
+        </section>
+    </div>
+{% endblock %}

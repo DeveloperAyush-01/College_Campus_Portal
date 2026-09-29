@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% block title %}
+    Admin Command Center
+{% endblock %}
+{% block content %}
+    <section class="hero-clean">
+        <img src="{{ portal_media.banner }}" alt="Government Polytechnic College Jaunpur College Campus Portal">
+    </section>
+    <div class="page">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">
+                    CONTROL TOWER
+                </span>
+                <h2>
+                    Advanced Admin Dashboard
+                </h2>
+                <p class="admin-byline">
+                    Admin:
+                    <b>
+                        AYUSH KUMAR PATEL
+                    </b>
+                </p>
+            </div>
+            <div class="actions">
+                <a class="primary" href="{{url_for('admin_manage')}}">
+                    ⚙ Admin Management
+                </a>
+                <a class="secondary" href="{{url_for('admin_analytics')}}">
+                    📈 Analytics
+                </a>
+                <a class="secondary" href="{{url_for('admin_complaints')}}">
+                    📨 Complaints
+                </a>
+            </div>
+        </div>
+        <div class="stats six">
+            <div>
+                <b>
+                    {{stats.students}}
+                </b>
+                <span>
+                    🎓 Students
+                </span>
+            </div>
+            <div>
+                <b>
+                    {{stats.teachers}}
+                </b>
+                <span>
+                    🧑‍🏫 Teachers
+                </span>
+            </div>
+            <div class="warn-stat">
+                <b>
+                    {{stats.pending_students}}
+                </b>
+                <span>
+                    🔐 Roll Numbers Reserved
+                </span>
+            </div>
+            <div>
+                <b>
+                    {{stats.subjects}}
+                </b>
+                <span>
+                    📚 Subjects
+                </span>
+            </div>
+            <div>
+                <b>
+                    {{stats.posts}}
+                </b>
+                <span>
+                    📢 Published
+                </span>
+            </div>
+            <div>
+                <b>
+                    {{stats.assignments}}
+                </b>
+                <span>
+                    📝 Assignments
+                </span>
+            </div>
+            <div>
+                <b>
+                    {{stats.events}}
+                </b>
+                <span>
+                    🗓️ Upcoming Events
+                </span>
+            </div>
+        </div>
+        <div class="stats six" style="margin-top:14px">
+            <div class="danger-stat">
+                <b>
+                    {{stats.complaints}}
+                </b>
+                <span>
+                    🚨 Active Complaints
+                </span>
+            </div>
+            <div class="warn-stat">
+                <b>
+                    {{stats.low_attendance}}
+                </b>
+                <span>
+                    ⚠️ Low Attendance
+                </span>
+            </div>
+        </div>
+        <section class="card">
+            <div class="section-head">
+                <h3>
+                    📊 Live Campus Analytics
+                </h3>
+                <span class="muted">
+                    Users, complaints, attendance and content
+                </span>
+            </div>
+            <div class="charts-grid">
+                <div>
+                    <canvas id="branchChart">
+                    </canvas>
+                </div>
+                <div>
+                    <canvas id="statusChart">
+                    </canvas>
+                </div>
+                <div>
+                    <canvas id="attendanceChart">
+                    </canvas>
+                </div>
+            </div>
+        </section>
+        <div class="grid-2">
+            <section class="card">
+                <h3>
+                    🧑‍🏫 Faculty Directory
+                </h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>
+                                    Name
+                                </th>
+                                <th>
+                                    Department
+                                </th>
+                                <th>
+                                    Email
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in teachers %}
+                                <tr>
+                                    <td>
+                                        {{t.full_name}}
+                                    </td>
+                                    <td>
+                                        {{t.branch}}
+                                    </td>
+                                    <td>
+                                        {{t.email or '—'}}
+                                    </td>
+                                    <td>
+                                        {{'Active' if t.active else 'Inactive'}}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <section class="card">
+                <h3>
+                    🎓 Student Records
+                </h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>
+                                    Name
+                                </th>
+                                <th>
+                                    Roll
+                                </th>
+                                <th>
+                                    Branch
+                                </th>
+                                <th>
+                                    Y/S
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in students %}
+                                <tr>
+                                    <td>
+                                        {{s.full_name}}
+                                    </td>
+                                    <td>
+                                        {{s.roll_no}}
+                                    </td>
+                                    <td>
+                                        {{s.branch}}
+                                    </td>
+                                    <td>
+                                        {{s.year_no}}
+                                        /
+                                        {{s.semester}}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+        <section class="card">
+            <div class="section-head">
+                <h3>
+                    🗓️ Recent Events
+                </h3>
+                <a class="secondary" href="{{url_for('admin_manage')}}#events">
+                    Add Event
+                </a>
+            </div>
+            {% for e in events %}
+                <div class="complaint-row">
+                    <div>
+                        <b>
+                            {{e.title}}
+                        </b>
+                        <small>
+                            {{e.event_date}}
+                            ·
+                            {{e.venue or 'Campus'}}
+                        </small>
+                    </div>
+                    <span>
+                        {{e.event_type}}
+                    </span>
+                </div>
+            {% else %}
+                <div class="empty">
+                    No events yet.
+                </div>
+            {% endfor %}
+        </section>
+        <section class="card">
+            <div class="section-head">
+                <h3>
+                    📨 Complaint Queue
+                </h3>
+                <a class="secondary" href="{{url_for('admin_complaints')}}">
+                    Open full workflow →
+                </a>
+            </div>
+            {% for c in complaints %}
+                <div class="complaint-row">
+                    <div>
+                        <span class="badge status-{{c.status}}">
+                            {{c.status.replace('_',' ')}}
+                        </span>
+                        <b>
+                            {{c.subject}}
+                        </b>
+                        <small>
+                            {{c.student_name}}
+                            ·
+                            {{c.category}}
+                        </small>
+                    </div>
+                    <span>
+                        {{c.updated_at}}
+                    </span>
+                </div>
+            {% else %}
+                <div class="empty">
+                    No complaints.
+                </div>
+            {% endfor %}
+        </section>
+    </div>
+    <script>
+        window.ADMIN_ANALYTICS={{analytics|tojson}};document.addEventListener('DOMContentLoaded',()=>renderAdminCharts(window.ADMIN_ANALYTICS));
+    </script>
+{% endblock %}

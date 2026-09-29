@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}
+    Assignment Submissions · College Campus Portal
+{% endblock %}
+{% block content %}
+    <div class="page">
+        <section class="card">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">
+                        ASSIGNMENT REVIEW
+                    </span>
+                    <h1>
+                        {{assignment.title}}
+                    </h1>
+                    <p class="muted">
+                        {{assignment.subject_name}}
+                        · Due
+                        {{assignment.due_at or 'No fixed deadline'}}
+                    </p>
+                </div>
+                <a class="secondary" href="{{url_for('teacher_dashboard')}}#assignments">
+                    ← Back
+                </a>
+            </div>
+            {% for r in rows %}
+                <div class="submission-row">
+                    <div>
+                        <b>
+                            {{r.full_name}}
+                        </b>
+                        <div class="muted">
+                            Roll No:
+                            {{r.roll_no}}
+                            · Submitted:
+                            {{r.submitted_at}}
+                            · Status:
+                            {{r.status}}
+                        </div>
+                        {% if r.file_path %}
+                            <p>
+                                <a class="file-link" target="_blank" href="{{r.file_path}}">
+                                    👀 Open submitted file
+                                </a>
+                            </p>
+                        {% endif %}
+                        {% if r.note %}
+                            <div class="data-card">
+                                {{r.note}}
+                            </div>
+                        {% endif %}
+                        {% if r.feedback %}
+                            <p class="reply">
+                                <b>
+                                    Previous feedback:
+                                </b>
+                                {{r.feedback}}
+                            </p>
+                        {% endif %}
+                    </div>
+                    <form method="post" action="{{url_for('grade_submission',sid=r.id)}}" class="grade-form">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+                        <label>
+                            Marks
+                            <input type="number" step="0.01" name="marks" value="{{r.marks if r.marks is not none else ''}}" required>
+                        </label>
+                        <label>
+                            Max Marks
+                            <input type="number" step="0.01" name="max_marks" value="{{r.max_marks or 100}}" required>
+                        </label>
+                        <textarea name="feedback" rows="2" placeholder="Feedback">
+                            {{r.feedback or ''}}
+                        </textarea>
+                        <button class="primary">
+                            Save Grade & Notify
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="empty">
+                    No students have submitted this assignment yet.
+                </div>
+            {% endfor %}
+        </section>
+    </div>
+{% endblock %}

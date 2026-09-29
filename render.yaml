@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: college-campus-portal
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn portal:app --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /healthz
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: SESSION_COOKIE_SECURE
+        value: "1"
+      - key: MYSQL_DATABASE
+        value: college_campus_portal_cloud
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MYSQL_SSL_VERIFY
+        value: "1"
+      - key: MYSQL_SSL_IDENTITY
+        value: "1"

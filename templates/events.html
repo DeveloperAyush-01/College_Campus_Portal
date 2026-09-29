@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}
+    Events & Holidays · College Campus Portal
+{% endblock %}
+{% block content %}
+    <section class="hero-clean small">
+        <img src="{{ portal_media.banner }}" alt="College Campus Portal">
+    </section>
+    <div class="page">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">
+                    CAMPUS CALENDAR
+                </span>
+                <h1>
+                    Events & Holidays
+                </h1>
+                <p class="muted">
+                    Today:
+                    <b>
+                        {{today_day}}
+                        ,
+                        {{today_date}}
+                    </b>
+                    · College programmes, activities and important dates.
+                </p>
+            </div>
+        </div>
+        <div class="event-grid">
+            {% for e in events %}
+                <article class="event-card">
+                    <div class="event-date">
+                        {{e.event_date}}
+                        (
+                        {{ e.event_date.strftime("%A") if e.event_date else "" }}
+                        )
+                        {% if e.start_time %}
+                            ·
+                            {{e.start_time}}
+                        {% endif %}
+                    </div>
+                    <h3>
+                        {{e.title}}
+                    </h3>
+                    <span class="badge">
+                        {{e.event_type}}
+                    </span>
+                    <p class="muted">
+                        {{e.description or 'College event / important campus date.'}}
+                    </p>
+                    <p class="muted">
+                        📍
+                        {{e.venue or 'Government Polytechnic College, Jaunpur'}}
+                    </p>
+                </article>
+            {% else %}
+                <div class="empty">
+                    No events have been published yet.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
